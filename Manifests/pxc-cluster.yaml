@@ -1,0 +1,30 @@
+apiVersion: pxc.percona.com/v1
+kind: PerconaXtraDBCluster
+metadata:
+  name: pxc-cluster
+  namespace: exam
+spec:
+  crVersion: 1.10.0
+  secretsName: my-secret
+  pxc:
+    size: 3
+    image: "percona/percona-xtradb-cluster:8.0"
+    resources:
+      requests:
+        memory: "2Gi"
+        cpu: "1"
+      limits:
+        memory: "4Gi"
+        cpu: "2"
+    volumeSpec:
+      persistentVolumeClaim:
+        storageClassName: standard
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 10Gi
+  haproxy:
+    enabled: true
+    size: 1
+  logcollector:
+    enabled: true

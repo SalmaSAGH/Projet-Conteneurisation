@@ -1,0 +1,10 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: db-pdb
+  namespace: exam
+spec:
+  maxUnavailable: 1 # Pas plus de 1 Pod indisponible à la fois
+  selector:
+    matchLabels:
+      app: db 

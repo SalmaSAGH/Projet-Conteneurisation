@@ -1,0 +1,15 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: resource-manager
+  namespace: exam
+rules:
+  - apiGroups: [""] # Pour les ressources du groupe de base (core API group)
+    resources: ["pods", "services"] # Liste des ressources contrôlées
+    verbs: ["get", "list", "watch", "delete"] # Actions autorisées
+  - apiGroups: ["apps"] # Pour les StatefulSets et Deployments (apps API group)
+    resources: ["statefulsets", "deployments"]
+    verbs: ["get", "list", "watch", "update"] # Actions autorisées
+  - apiGroups: [""] # Pour les ResourceQuotas et LimitRanges
+    resources: ["resourcequotas", "limitranges"]
+    verbs: ["get", "list"]

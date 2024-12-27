@@ -1,0 +1,112 @@
+version: '3.8'
+
+networks:
+  net:
+    external: true
+
+volumes:
+  mysqlvol:
+    external: true
+  traefik-certificates:
+    driver: local
+
+services:
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik
+    command:
+      - "--entrypoints.web.address=:80"
+      - "--providers.docker=true"
+      - "--api.insecure=true"
+      - "--providers.docker.network=net"
+    ports:
+      - "80:80"
+      - "8080:8080"  # Traefik Dashboard
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "traefik-certificates:/etc/traefik/certs"
+    networks:
+      - net
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  db:
+    image: mysql
+    container_name: mysqldb-container
+    networks:
+      - net
+    environment:
+      MYSQL_ROOT_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    volumes:
+      - mysqlvol:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "512M"
+      restart_policy:
+        condition: on-failure
+    labels:
+      - "traefik.enable=true"  # Exposition via Traefik
+      - "traefik.http.routers.db.entrypoints=web"
+      - "traefik.http.routers.db.rule=Host(`database.example.com`)"
+      - "traefik.http.services.db.loadbalancer.server.port=3306"
+
+  backend:
+    image: salmasaghough/backend-app:v2
+    container_name: backend-container
+    networks:
+      - net
+    environment:
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+    depends_on:
+      - db
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: "1"
+          memory: "1G"
+      restart_policy:
+        condition: on-failure
+    labels:
+     - "traefik.enable=true"
+     - "traefik.http.routers.backend.entrypoints=web"
+     - "traefik.http.routers.backend.rule=Host(`backend.example.com`)"
+     - "traefik.http.services.backend.loadbalancer.server.port=9192"
+    ports:
+      - "9192:9192"
+
+  frontend:
+    image: salmasaghough/frontendnew-app
+    container_name: frontend-container
+    networks:
+      - net
+    depends_on:
+      - backend
+    environment:
+      - REACT_APP_API_URL=${REACT_APP_API_URL}
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "256M"
+      restart_policy:
+        condition: on-failure
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`frontend.example.com`)"
+      - "traefik.http.services.frontend.loadbalancer.server.port=80"
+      - "traefik.docker.network=net"

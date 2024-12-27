@@ -1,0 +1,76 @@
+version: '3.8'
+
+networks:
+  net:
+    external: true
+
+volumes:
+  mysqlvol:
+    external: true
+
+services:
+  db:
+    image: localhost:8000/mysqldb-image:latest
+    container_name: mysqldb-container
+    networks:
+      - net
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysqlvol:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "512M"
+      restart_policy:
+        condition: on-failure
+
+  backend:
+    image: localhost:8000/backend-app:latest
+    container_name: backend-container
+    networks:
+      - net
+    environment:
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+    ports:
+      - "9192:9192"
+    depends_on:
+      - db
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: "1"
+          memory: "1G"
+      restart_policy:
+        condition: on-failure
+
+  frontend:
+    image: localhost:8000/frontend-app:latest  
+    container_name: frontend-container
+    networks:
+      - net
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "256M"
+      restart_policy:
+        condition: on-failure

@@ -1,0 +1,12 @@
+com\nisanth\springbootreact\model\Student.class
+com\nisanth\springbootreact\repository\NoteRepository.class
+com\nisanth\springbootreact\exception\StudentAleadyExistsException.class
+com\nisanth\springbootreact\service\StudentService.class
+com\nisanth\springbootreact\service\IStudentService.class
+com\nisanth\springbootreact\model\Note.class
+com\nisanth\springbootreact\controller\StudentController.class
+com\nisanth\springbootreact\controller\NoteController.class
+com\nisanth\springbootreact\exception\StudentNotFoundException.class
+com\nisanth\springbootreact\repository\StudentRepository.class
+com\nisanth\springbootreact\SpringBootReactApplication.class
+com\nisanth\springbootreact\exception\CustomExceptionHandler.class

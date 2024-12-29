@@ -20,11 +20,30 @@ spec:
             - containerPort: 80
           resources:
             requests:
-               memory: "128Mi" 
-               cpu: "100m"
+              memory: "128Mi"
+              cpu: "100m"
             limits:
-               memory: "256Mi"
-               cpu: "200m"
+              memory: "256Mi"
+              cpu: "200m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 15
+            periodSeconds: 10
+
 ---
 apiVersion: v1
 kind: Service
@@ -33,13 +52,9 @@ metadata:
   namespace: exam
 spec:
   selector:
-    type: ClusterIP
     app: frontend
   ports:
     - protocol: TCP
       port: 80
       targetPort: 80
-  
-
-
-
+  type: ClusterIP

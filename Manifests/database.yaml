@@ -38,16 +38,46 @@ spec:
             limits:
               memory: "2Gi"      # Maximum autorisé : 2Gi
               cpu: "1"           # Maximum autorisé : 1 CPU
-      
-  volumeClaimTemplates:
-    - metadata:
-        name: mysql-data
-      spec:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 10Gi
+          livenessProbe:
+            exec:
+              command:
+                - mysqladmin
+                - ping
+                - "-h127.0.0.1"
+                - "-uroot"
+                - "-p$MYSQL_ROOT_PASSWORD"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - mysqladmin
+                - ping
+                - "-h127.0.0.1"
+                - "-uroot"
+                - "-p$MYSQL_ROOT_PASSWORD"
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          startupProbe:
+            exec:
+              command:
+                - mysqladmin
+                - ping
+                - "-h127.0.0.1"
+                - "-uroot"
+                - "-p$MYSQL_ROOT_PASSWORD"
+            initialDelaySeconds: 60
+            periodSeconds: 15
+      volumeClaimTemplates:
+        - metadata:
+            name: mysql-data
+          spec:
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: 10Gi
+
 ---
 apiVersion: v1
 kind: Service

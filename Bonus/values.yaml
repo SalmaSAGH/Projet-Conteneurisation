@@ -1,0 +1,15 @@
+cluster:
+  enabled: true
+  name: my-cluster
+  size: 3
+  image:
+    repository: percona/percona-xtradb-cluster
+    tag: "8.0"
+
+secrets:
+  root: MDIwNjk4MTJTYWxtYV8=         # Mot de passe pour l'utilisateur root
+  xtrabackup: MDIwNjk4MTJTYWxtYV8= # Mot de passe pour les sauvegardes
+  monitor: MDIwNjk4MTJTYWxtYV8=   # Mot de passe pour la surveillance
+
+storage:
+  size: 20Gi                     # Taille du stockage

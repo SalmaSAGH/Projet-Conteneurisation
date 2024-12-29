@@ -1,0 +1,41 @@
+apiVersion: pxc.percona.com/v1
+kind: PerconaXtraDBCluster
+metadata:
+  name: my-cluster
+  namespace: exam
+spec:
+  crVersion: 1.11.0
+  secretsName: mysql-secrets
+  sslSecretName: my-cluster-ssl
+  updateStrategy: SmartUpdate
+  
+  pxc:
+    size: 3
+    image: percona/percona-xtradb-cluster:8.0
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "500m"
+      limits:
+        memory: "2Gi"
+        cpu: "1"
+    volumeSpec:
+      persistentVolumeClaim:
+        accessModes:
+          - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: 20Gi
+    enabled: true
+
+  haproxy:
+    enabled: true
+    size: 2
+    image: percona/percona-xtradb-cluster-operator:latest
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "250m"
+      limits:
+        memory: "1Gi"
+        cpu: "500m"

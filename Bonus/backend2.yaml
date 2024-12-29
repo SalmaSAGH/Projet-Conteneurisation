@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: exam
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels: 
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          image: salmasaghough/backendex
+          ports:
+            - containerPort: 9192
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:mysql://my-cluster-pxc-db-haproxy.exam.svc.cluster.local:3306/user"
+            - name: SPRING_DATASOURCE_USERNAME
+              value: "root" # Utilisateur défini dans `values.yaml`
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secrets
+                  key: root-password
+
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "200m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+  namespace: exam
+spec:
+  type: ClusterIP
+  selector:
+    app: backend
+  ports:
+    - protocol: TCP
+      port: 9192
+      targetPort: 9192
+
